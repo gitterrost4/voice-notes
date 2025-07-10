@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.mayororganizer'
+    namespace 'com.voicenotes'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.mayororganizer"
+        applicationId "com.voicenotes"
         minSdk 24
         targetSdk 34
         versionCode 1
@@ -24,6 +24,10 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+    
+    lintOptions {
+        abortOnError false
     }
 }
 

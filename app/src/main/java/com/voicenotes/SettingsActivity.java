@@ -1,4 +1,4 @@
-package com.mayororganizer;
+package com.voicenotes;
 
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
@@ -22,7 +22,7 @@ import java.util.List;
 
 public class SettingsActivity extends AppCompatActivity implements CategoriesAdapter.OnStartDragListener {
     
-    private static final String PREFS_NAME = "mayor_organizer_prefs";
+    private static final String PREFS_NAME = "voice_notes_prefs";
     private static final String CATEGORIES_KEY = "categories";
     private static final List<String> DEFAULT_CATEGORIES = Arrays.asList(
         "ToDos", "Reminders", "Town Meeting"

@@ -1,4 +1,4 @@
-package com.mayororganizer;
+package com.voicenotes;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

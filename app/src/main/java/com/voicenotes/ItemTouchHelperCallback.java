@@ -1,4 +1,4 @@
-package com.mayororganizer;
+package com.voicenotes;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.ItemTouchHelper;

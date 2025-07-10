@@ -1,4 +1,4 @@
-package com.mayororganizer;
+package com.voicenotes;
 
 import android.Manifest;
 import android.content.Intent;
@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
     
     private static final int PERMISSION_REQUEST_CODE = 1001;
     private static final String RECORDINGS_FILE = "recordings.json";
-    private static final String PREFS_NAME = "mayor_organizer_prefs";
+    private static final String PREFS_NAME = "voice_notes_prefs";
     private static final String CATEGORIES_KEY = "categories";
     private static final List<String> DEFAULT_CATEGORIES = Arrays.asList(
         "ToDos", "Reminders", "Town Meeting"

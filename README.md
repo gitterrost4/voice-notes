@@ -1,6 +1,6 @@
-# Mayor Organizer App
+# Voice Notes App
 
-A personal Android app for mayors to organize audio recordings with categories and completion tracking.
+A personal Android app to organize audio recordings with categories and completion tracking.
 
 ## Features
 
