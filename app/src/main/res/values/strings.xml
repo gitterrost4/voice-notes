@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mayor Organizer</string>
+    <string name="record_audio">Record Audio</string>
+    <string name="stop_recording">Stop Recording</string>
+    <string name="play_audio">Play</string>
+    <string name="stop_audio">Stop</string>
+    <string name="delete_audio">Delete</string>
+    <string name="mark_done">Done</string>
+    <string name="mark_undone">Undo</string>
+    <string name="category_todos">ToDos</string>
+    <string name="category_reminders">Reminders</string>
+    <string name="category_town_meeting">Town Meeting</string>
+    <string name="select_category">Select Category</string>
+    <string name="recording_saved">Recording saved successfully</string>
+    <string name="permission_required">Audio recording permission required</string>
+    <string name="active_recordings">Active Recordings</string>
+    <string name="completed_recordings">Completed</string>
+    <string name="show_completed">Show Completed (%d)</string>
+    <string name="hide_completed">Hide Completed</string>
+    <string name="settings">Settings</string>
+    <string name="category_settings">Category Settings</string>
+    <string name="add_category">Add Category</string>
+    <string name="delete_category">Delete</string>
+    <string name="enter_category_name">Enter category name</string>
+    <string name="category_name">Category Name</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+</resources>
