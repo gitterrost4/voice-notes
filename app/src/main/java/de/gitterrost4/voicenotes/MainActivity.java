@@ -14,6 +14,7 @@ import android.app.AlertDialog;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -67,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
     private MediaRecorder mediaRecorder;
     private MediaPlayer mediaPlayer;
     private Button recordButton;
-    private Button addTextNoteButton;
+    private ImageButton addTextNoteButton;
     private View recordIndicator;
     private Spinner categorySpinner;
     private RecyclerView activeNotesRecyclerView;

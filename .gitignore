@@ -80,3 +80,6 @@ lint/generated/
 lint/outputs/
 lint/tmp/
 # lint/reports/
+
+# Claude development context (private)
+CLAUDE.md

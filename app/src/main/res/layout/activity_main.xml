@@ -54,14 +54,15 @@
 
         </FrameLayout>
 
-        <Button
+        <ImageButton
             android:id="@+id/addTextNoteButton"
             android:layout_width="80dp"
             android:layout_height="80dp"
-            android:text="📝"
-            android:textSize="24sp"
-            android:textColor="#FFFFFF"
+            android:src="@android:drawable/ic_menu_edit"
             android:background="@drawable/circle_button_background"
+            android:contentDescription="@string/add_text_note"
+            android:scaleType="centerInside"
+            android:padding="20dp"
             android:layout_centerVertical="true"
             android:layout_toEndOf="@id/recordButtonFrame"
             android:layout_marginStart="24dp" />
