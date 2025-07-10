@@ -8,6 +8,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends AppCompatActivity implements CategoriesAdapter.OnStartDragListener {
     
     private static final String PREFS_NAME = "mayor_organizer_prefs";
     private static final String CATEGORIES_KEY = "categories";
@@ -31,6 +32,7 @@ public class SettingsActivity extends AppCompatActivity {
     private CategoriesAdapter adapter;
     private SharedPreferences prefs;
     private Gson gson;
+    private ItemTouchHelper itemTouchHelper;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,9 +71,14 @@ public class SettingsActivity extends AppCompatActivity {
         Button addCategoryButton = findViewById(R.id.addCategoryButton);
         RecyclerView categoriesRecyclerView = findViewById(R.id.categoriesRecyclerView);
         
-        adapter = new CategoriesAdapter(categories, this::deleteCategory);
+        adapter = new CategoriesAdapter(categories, this::deleteCategory, this);
         categoriesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         categoriesRecyclerView.setAdapter(adapter);
+        
+        // Set up drag and drop
+        ItemTouchHelperCallback callback = new ItemTouchHelperCallback(adapter, this::saveCategories);
+        itemTouchHelper = new ItemTouchHelper(callback);
+        itemTouchHelper.attachToRecyclerView(categoriesRecyclerView);
         
         addCategoryButton.setOnClickListener(v -> showAddCategoryDialog());
     }
@@ -120,6 +127,11 @@ public class SettingsActivity extends AppCompatActivity {
         
         builder.setNegativeButton(R.string.cancel, (dialog, which) -> dialog.cancel());
         builder.show();
+    }
+    
+    @Override
+    public void onStartDrag(RecyclerView.ViewHolder viewHolder) {
+        itemTouchHelper.startDrag(viewHolder);
     }
     
     @Override

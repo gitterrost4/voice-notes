@@ -7,6 +7,17 @@
     android:background="#1E1E1E"
     android:layout_marginBottom="8dp">
 
+    <ImageView
+        android:id="@+id/dragHandle"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@android:drawable/ic_menu_sort_by_size"
+        android:layout_gravity="center_vertical"
+        android:scaleType="centerInside"
+        android:padding="12dp"
+        android:contentDescription="Drag to reorder"
+        android:tint="#888888" />
+
     <TextView
         android:id="@+id/categoryNameText"
         android:layout_width="0dp"
@@ -14,7 +25,8 @@
         android:layout_weight="1"
         android:textSize="16sp"
         android:textColor="#FFFFFF"
-        android:layout_gravity="center_vertical" />
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="8dp" />
 
     <ImageButton
         android:id="@+id/deleteCategoryButton"
