@@ -10,8 +10,10 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.app.AlertDialog;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,7 +53,7 @@ import java.lang.reflect.Type;
 public class MainActivity extends AppCompatActivity {
     
     private static final int PERMISSION_REQUEST_CODE = 1001;
-    private static final String RECORDINGS_FILE = "recordings.json";
+    private static final String NOTES_FILE = "notes.json";
     private static final String PREFS_NAME = "voice_notes_prefs";
     private static final String CATEGORIES_KEY = "categories";
     private static final List<String> DEFAULT_CATEGORIES = Arrays.asList(
@@ -65,18 +67,19 @@ public class MainActivity extends AppCompatActivity {
     private MediaRecorder mediaRecorder;
     private MediaPlayer mediaPlayer;
     private Button recordButton;
+    private Button addTextNoteButton;
     private View recordIndicator;
     private Spinner categorySpinner;
-    private RecyclerView activeRecordingsRecyclerView;
-    private RecyclerView completedRecordingsRecyclerView;
+    private RecyclerView activeNotesRecyclerView;
+    private RecyclerView completedNotesRecyclerView;
     private TextView completedSectionHeader;
-    private AudioRecordingAdapter activeAdapter;
-    private AudioRecordingAdapter completedAdapter;
-    private List<AudioRecording> recordings;
-    private List<AudioRecording> activeRecordings;
-    private List<AudioRecording> completedRecordings;
+    private NoteAdapter activeAdapter;
+    private NoteAdapter completedAdapter;
+    private List<Note> notes;
+    private List<Note> activeNotes;
+    private List<Note> completedNotes;
     private Optional<String> currentRecordingPath = Optional.empty();
-    private Optional<AudioRecording> currentlyPlaying = Optional.empty();
+    private Optional<Note> currentlyPlaying = Optional.empty();
     private boolean isRecording = false;
     private boolean isCompletedSectionExpanded = false;
     
@@ -91,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
         setupCategorySpinner();
         setupRecyclerView();
         setupButtonListeners();
-        loadRecordings();
+        loadNotes();
         
         checkPermissions();
     }
@@ -105,10 +108,11 @@ public class MainActivity extends AppCompatActivity {
     
     private void initializeViews() {
         recordButton = findViewById(R.id.recordButton);
+        addTextNoteButton = findViewById(R.id.addTextNoteButton);
         recordIndicator = findViewById(R.id.recordIndicator);
         categorySpinner = findViewById(R.id.categorySpinner);
-        activeRecordingsRecyclerView = findViewById(R.id.activeRecordingsRecyclerView);
-        completedRecordingsRecyclerView = findViewById(R.id.completedRecordingsRecyclerView);
+        activeNotesRecyclerView = findViewById(R.id.activeRecordingsRecyclerView);
+        completedNotesRecyclerView = findViewById(R.id.completedRecordingsRecyclerView);
         completedSectionHeader = findViewById(R.id.completedSectionHeader);
     }
     
@@ -134,17 +138,26 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void setupRecyclerView() {
-        recordings = new ArrayList<>();
-        activeRecordings = new ArrayList<>();
-        completedRecordings = new ArrayList<>();
+        notes = new ArrayList<>();
+        activeNotes = new ArrayList<>();
+        completedNotes = new ArrayList<>();
         
-        activeAdapter = new AudioRecordingAdapter(activeRecordings, this::playRecording, this::deleteRecording, this::toggleDoneStatus, this);
-        activeRecordingsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        activeRecordingsRecyclerView.setAdapter(activeAdapter);
+        NoteAdapter.OnNoteActionListener listener = new NoteAdapter.OnNoteActionListener() {
+            @Override
+            public void onPlayAudio(Note note) { playNote(note); }
+            @Override
+            public void onToggleDone(Note note) { toggleDoneStatus(note); }
+            @Override
+            public void onDelete(Note note) { deleteNote(note); }
+        };
         
-        completedAdapter = new AudioRecordingAdapter(completedRecordings, this::playRecording, this::deleteRecording, this::toggleDoneStatus, this);
-        completedRecordingsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        completedRecordingsRecyclerView.setAdapter(completedAdapter);
+        activeAdapter = new NoteAdapter(activeNotes, listener, this);
+        activeNotesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        activeNotesRecyclerView.setAdapter(activeAdapter);
+        
+        completedAdapter = new NoteAdapter(completedNotes, listener, this);
+        completedNotesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        completedNotesRecyclerView.setAdapter(completedAdapter);
         
         setupCompletedSectionHeader();
     }
@@ -156,6 +169,43 @@ public class MainActivity extends AppCompatActivity {
     
     private void setupButtonListeners() {
         recordButton.setOnClickListener(v -> toggleRecording());
+        addTextNoteButton.setOnClickListener(v -> showAddTextNoteDialog());
+    }
+    
+    private void showAddTextNoteDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.add_text_note);
+        
+        final EditText input = new EditText(this);
+        input.setHint(R.string.enter_note_text);
+        input.setMinLines(3);
+        input.setMaxLines(10);
+        builder.setView(input);
+        
+        builder.setPositiveButton(R.string.save, (dialog, which) -> {
+            String noteText = input.getText().toString().trim();
+            if (!noteText.isEmpty()) {
+                String selectedCategory = categories.get(categorySpinner.getSelectedItemPosition());
+                String noteId = "text_" + System.currentTimeMillis();
+                
+                Note textNote = new Note(
+                    noteId,
+                    Note.Type.TEXT,
+                    selectedCategory,
+                    LocalDateTime.now(),
+                    noteText
+                );
+                
+                notes.add(0, textNote);
+                refreshNoteLists();
+                saveNotes();
+                
+                Toast.makeText(this, R.string.text_note_saved, Toast.LENGTH_SHORT).show();
+            }
+        });
+        
+        builder.setNegativeButton(R.string.cancel, (dialog, which) -> dialog.cancel());
+        builder.show();
     }
     
     private void toggleRecording() {
@@ -230,17 +280,20 @@ public class MainActivity extends AppCompatActivity {
                 mediaRecorder = null;
                 
                 String category = categories.get(categorySpinner.getSelectedItemPosition());
-                AudioRecording recording = new AudioRecording(
-                    currentRecordingPath.get(),
+                String noteId = "audio_" + System.currentTimeMillis();
+                Note audioNote = new Note(
+                    noteId,
+                    Note.Type.AUDIO,
                     category,
-                    LocalDateTime.now()
+                    LocalDateTime.now(),
+                    currentRecordingPath.get()
                 );
                 
-                recordings.add(0, recording);
-                refreshRecordingLists();
+                notes.add(0, audioNote);
+                refreshNoteLists();
                 
                 Toast.makeText(this, R.string.recording_saved, Toast.LENGTH_SHORT).show();
-                saveRecordings(); // Save to persistent storage
+                saveNotes(); // Save to persistent storage
                 
             } catch (RuntimeException e) {
                 Toast.makeText(this, "Stop recording failed", Toast.LENGTH_SHORT).show();
@@ -257,13 +310,17 @@ public class MainActivity extends AppCompatActivity {
                 == PackageManager.PERMISSION_GRANTED;
     }
     
-    private void playRecording(AudioRecording recording) {
+    private void playNote(Note note) {
+        if (note.getType() != Note.Type.AUDIO) {
+            return; // Only audio notes can be played
+        }
+        
         // Stop any currently playing audio
         stopCurrentPlayback();
         
         try {
             mediaPlayer = new MediaPlayer();
-            mediaPlayer.setDataSource(recording.getFilePath());
+            mediaPlayer.setDataSource(note.getFilePath());
             mediaPlayer.setOnCompletionListener(mp -> {
                 stopCurrentPlayback();
                 activeAdapter.notifyDataSetChanged();
@@ -280,11 +337,11 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.prepare();
             mediaPlayer.start();
             
-            currentlyPlaying = Optional.of(recording);
+            currentlyPlaying = Optional.of(note);
             activeAdapter.notifyDataSetChanged();
             completedAdapter.notifyDataSetChanged();
             
-            Toast.makeText(this, "Playing: " + recording.getCategory(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Playing: " + note.getCategory(), Toast.LENGTH_SHORT).show();
             
         } catch (IOException e) {
             Toast.makeText(this, "Failed to play recording: " + e.getMessage(), 
@@ -304,36 +361,38 @@ public class MainActivity extends AppCompatActivity {
         currentlyPlaying = Optional.empty();
     }
     
-    public boolean isCurrentlyPlaying(AudioRecording recording) {
-        return currentlyPlaying.map(playing -> playing.equals(recording)).orElse(false);
+    public boolean isCurrentlyPlaying(Note note) {
+        return currentlyPlaying.map(playing -> playing.equals(note)).orElse(false);
     }
     
-    public AudioRecordingAdapter getAdapter() {
-        // Return the adapter that contains the currently playing recording
+    public NoteAdapter getAdapter() {
+        // Return the adapter that contains the currently playing note
         if (currentlyPlaying.isPresent()) {
-            AudioRecording playing = currentlyPlaying.get();
-            if (activeRecordings.contains(playing)) {
+            Note playing = currentlyPlaying.get();
+            if (activeNotes.contains(playing)) {
                 return activeAdapter;
-            } else if (completedRecordings.contains(playing)) {
+            } else if (completedNotes.contains(playing)) {
                 return completedAdapter;
             }
         }
         return activeAdapter; // Default to active adapter
     }
     
-    private void toggleDoneStatus(AudioRecording recording) {
-        recording.setDone(!recording.isDone());
-        refreshRecordingLists();
-        saveRecordings(); // Save updated status
+    private void toggleDoneStatus(Note note) {
+        note.setDone(!note.isDone());
+        refreshNoteLists();
+        saveNotes(); // Save updated status
     }
     
-    private void deleteRecording(AudioRecording recording) {
-        recordings.remove(recording);
-        refreshRecordingLists();
+    private void deleteNote(Note note) {
+        notes.remove(note);
+        refreshNoteLists();
         
-        // Delete the actual file
-        new File(recording.getFilePath()).delete();
-        saveRecordings(); // Save updated list
+        // Delete the actual file if it's an audio note
+        if (note.getType() == Note.Type.AUDIO && note.getFilePath() != null) {
+            new File(note.getFilePath()).delete();
+        }
+        saveNotes(); // Save updated list
     }
     
     @Override
@@ -393,58 +452,71 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     
-    private void saveRecordings() {
+    private void saveNotes() {
         try {
-            File file = new File(getFilesDir(), RECORDINGS_FILE);
-            // Filter out recordings where the audio file no longer exists
-            List<AudioRecording> validRecordings = recordings.stream()
-                .filter(recording -> new File(recording.getFilePath()).exists())
+            File file = new File(getFilesDir(), NOTES_FILE);
+            // Filter out audio notes where the audio file no longer exists
+            List<Note> validNotes = notes.stream()
+                .filter(note -> {
+                    if (note.getType() == Note.Type.AUDIO) {
+                        return new File(note.getFilePath()).exists();
+                    }
+                    return true; // Text notes are always valid
+                })
                 .collect(Collectors.toList());
             
             try (FileWriter writer = new FileWriter(file)) {
-                gson.toJson(validRecordings, writer);
+                gson.toJson(validNotes, writer);
             }
         } catch (IOException e) {
-            Toast.makeText(this, "Failed to save recordings", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Failed to save notes", Toast.LENGTH_SHORT).show();
         }
     }
     
-    private void loadRecordings() {
+    private void loadNotes() {
         try {
-            File file = new File(getFilesDir(), RECORDINGS_FILE);
+            File file = new File(getFilesDir(), NOTES_FILE);
             if (!file.exists()) {
-                return; // No saved recordings yet
+                return; // No saved notes yet
             }
             
             try (FileReader reader = new FileReader(file)) {
-                Type listType = new TypeToken<List<AudioRecording>>(){}.getType();
-                List<AudioRecording> loadedRecordings = gson.fromJson(reader, listType);
+                Type listType = new TypeToken<List<Note>>(){}.getType();
+                List<Note> loadedNotes = gson.fromJson(reader, listType);
                 
-                if (loadedRecordings != null) {
-                    // Filter out recordings where the audio file no longer exists
-                    List<AudioRecording> validRecordings = loadedRecordings.stream()
-                        .filter(recording -> new File(recording.getFilePath()).exists())
+                if (loadedNotes != null) {
+                    // Filter out audio notes where the audio file no longer exists
+                    List<Note> validNotes = loadedNotes.stream()
+                        .filter(note -> {
+                            if (note.getType() == Note.Type.AUDIO) {
+                                return new File(note.getFilePath()).exists();
+                            }
+                            return true; // Text notes are always valid
+                        })
                         .collect(Collectors.toList());
                     
-                    recordings.clear();
-                    recordings.addAll(validRecordings);
-                    refreshRecordingLists();
+                    notes.clear();
+                    notes.addAll(validNotes);
+                    refreshNoteLists();
                 }
             }
         } catch (Exception e) {
-            Toast.makeText(this, "Failed to load recordings", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Failed to load notes", Toast.LENGTH_SHORT).show();
         }
     }
     
-    private void refreshRecordingLists() {
-        activeRecordings.clear();
-        completedRecordings.clear();
+    private void refreshNoteLists() {
+        activeNotes.clear();
+        completedNotes.clear();
         
-        for (AudioRecording recording : recordings) {
-            if (recording.isDone()) {
-                completedRecordings.add(recording);
+        // Sort notes by timestamp (newest first) for chronological order
+        notes.sort((n1, n2) -> n2.getTimestamp().compareTo(n1.getTimestamp()));
+        
+        for (Note note : notes) {
+            if (note.isDone()) {
+                completedNotes.add(note);
             } else {
-                activeRecordings.add(recording);
+                activeNotes.add(note);
             }
         }
         
@@ -461,15 +533,15 @@ public class MainActivity extends AppCompatActivity {
     
     private void updateCompletedSectionVisibility() {
         int visibility = isCompletedSectionExpanded ? View.VISIBLE : View.GONE;
-        completedRecordingsRecyclerView.setVisibility(visibility);
+        completedNotesRecyclerView.setVisibility(visibility);
     }
     
     private void updateCompletedSectionHeader() {
-        int completedCount = completedRecordings.size();
+        int completedCount = completedNotes.size();
         
         if (completedCount == 0) {
             completedSectionHeader.setVisibility(View.GONE);
-            completedRecordingsRecyclerView.setVisibility(View.GONE);
+            completedNotesRecyclerView.setVisibility(View.GONE);
         } else {
             completedSectionHeader.setVisibility(View.VISIBLE);
             

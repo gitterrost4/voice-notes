@@ -1,12 +1,14 @@
 # Voice Notes App
 
-A personal Android app to organize audio recordings with categories and completion tracking.
+A personal Android app to organize audio recordings and text notes with categories and completion tracking.
 
 ## Features
 
 - **Audio Recording**: One-tap circular recording button with visual feedback
-- **Custom Categories**: Fully customizable recording categories via settings
-- **Completion Tracking**: Mark recordings as done with visual indicators
+- **Text Notes**: Quick text note creation for situations where audio isn't practical
+- **Mixed Timeline**: Audio and text notes displayed chronologically together
+- **Custom Categories**: Fully customizable note categories via settings
+- **Completion Tracking**: Mark notes as done with visual indicators
 
 ## Default Categories
 

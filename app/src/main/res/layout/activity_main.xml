@@ -21,33 +21,52 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp" />
 
-    <FrameLayout
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
         android:layout_marginBottom="24dp">
 
-        <View
-            android:layout_width="160dp"
-            android:layout_height="160dp"
-            android:background="@drawable/circle_button_background"
-            android:layout_gravity="center" />
+        <FrameLayout
+            android:id="@+id/recordButtonFrame"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true">
+
+            <View
+                android:layout_width="160dp"
+                android:layout_height="160dp"
+                android:background="@drawable/circle_button_background"
+                android:layout_gravity="center" />
+
+            <Button
+                android:id="@+id/recordButton"
+                android:layout_width="160dp"
+                android:layout_height="160dp"
+                android:background="@android:color/transparent"
+                android:layout_gravity="center" />
+
+            <View
+                android:id="@+id/recordIndicator"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/record_dot"
+                android:layout_gravity="center" />
+
+        </FrameLayout>
 
         <Button
-            android:id="@+id/recordButton"
-            android:layout_width="160dp"
-            android:layout_height="160dp"
-            android:background="@android:color/transparent"
-            android:layout_gravity="center" />
+            android:id="@+id/addTextNoteButton"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:text="📝"
+            android:textSize="24sp"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/circle_button_background"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@id/recordButtonFrame"
+            android:layout_marginStart="24dp" />
 
-        <View
-            android:id="@+id/recordIndicator"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="@drawable/record_dot"
-            android:layout_gravity="center" />
-
-    </FrameLayout>
+    </RelativeLayout>
 
     <ScrollView
         android:layout_width="match_parent"

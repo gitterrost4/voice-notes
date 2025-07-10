@@ -14,7 +14,7 @@
     <string name="select_category">Select Category</string>
     <string name="recording_saved">Recording saved successfully</string>
     <string name="permission_required">Audio recording permission required</string>
-    <string name="active_recordings">Active Recordings</string>
+    <string name="active_recordings">Active Notes</string>
     <string name="completed_recordings">Completed</string>
     <string name="show_completed">Show Completed (%d)</string>
     <string name="hide_completed">Hide Completed</string>
@@ -26,4 +26,8 @@
     <string name="category_name">Category Name</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
+    <string name="add_text_note">Add Text Note</string>
+    <string name="enter_note_text">Enter your note</string>
+    <string name="note_text">Note Text</string>
+    <string name="text_note_saved">Text note saved successfully</string>
 </resources>
