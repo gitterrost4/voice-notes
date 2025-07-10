@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.voicenotes'
+    namespace 'de.gitterrost4.voicenotes'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.voicenotes"
+        applicationId "de.gitterrost4.voicenotes"
         minSdk 24
         targetSdk 34
         versionCode 1

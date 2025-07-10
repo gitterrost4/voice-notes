@@ -1,4 +1,4 @@
-package com.voicenotes;
+package de.gitterrost4.voicenotes;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

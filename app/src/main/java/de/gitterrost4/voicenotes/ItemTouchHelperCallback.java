@@ -1,4 +1,4 @@
-package com.voicenotes;
+package de.gitterrost4.voicenotes;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.ItemTouchHelper;

@@ -1,4 +1,4 @@
-package com.voicenotes;
+package de.gitterrost4.voicenotes;
 
 import android.app.AlertDialog;
 import android.content.SharedPreferences;

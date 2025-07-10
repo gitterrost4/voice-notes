@@ -1,4 +1,4 @@
-package com.voicenotes;
+package de.gitterrost4.voicenotes;
 
 import android.content.res.ColorStateList;
 import android.graphics.Color;
