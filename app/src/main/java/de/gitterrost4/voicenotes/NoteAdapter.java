@@ -79,10 +79,15 @@ public class NoteAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             holder.timestamp.setTextColor(Color.parseColor("#CCCCCC"));
         }
         
-        // Update play button based on playing state
+        // Update play button based on playing/paused state
         boolean isPlaying = mainActivity.isCurrentlyPlaying(note);
-        if (isPlaying) {
+        boolean isPaused = mainActivity.isCurrentlyPaused(note);
+        
+        if (isPlaying && !isPaused) {
             holder.playButton.setImageResource(android.R.drawable.ic_media_pause);
+            holder.playButton.setImageTintList(ColorStateList.valueOf(Color.parseColor("#FF9800")));
+        } else if (isPaused) {
+            holder.playButton.setImageResource(android.R.drawable.ic_media_play);
             holder.playButton.setImageTintList(ColorStateList.valueOf(Color.parseColor("#FF9800")));
         } else {
             holder.playButton.setImageResource(android.R.drawable.ic_media_play);

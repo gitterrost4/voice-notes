@@ -316,6 +316,24 @@ public class MainActivity extends AppCompatActivity {
             return; // Only audio notes can be played
         }
         
+        // If this note is currently playing, pause it
+        if (currentlyPlaying.isPresent() && currentlyPlaying.get().equals(note)) {
+            if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                mediaPlayer.pause();
+                activeAdapter.notifyDataSetChanged();
+                completedAdapter.notifyDataSetChanged();
+                Toast.makeText(this, "Paused: " + note.getCategory(), Toast.LENGTH_SHORT).show();
+                return;
+            } else if (mediaPlayer != null) {
+                // Resume playback
+                mediaPlayer.start();
+                activeAdapter.notifyDataSetChanged();
+                completedAdapter.notifyDataSetChanged();
+                Toast.makeText(this, "Resumed: " + note.getCategory(), Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+        
         // Stop any currently playing audio
         stopCurrentPlayback();
         
@@ -364,6 +382,10 @@ public class MainActivity extends AppCompatActivity {
     
     public boolean isCurrentlyPlaying(Note note) {
         return currentlyPlaying.map(playing -> playing.equals(note)).orElse(false);
+    }
+    
+    public boolean isCurrentlyPaused(Note note) {
+        return currentlyPlaying.map(playing -> playing.equals(note) && mediaPlayer != null && !mediaPlayer.isPlaying()).orElse(false);
     }
     
     public NoteAdapter getAdapter() {
