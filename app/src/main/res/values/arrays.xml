@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="transcription_languages">
+        <item>German (Deutschland)</item>
+        <item>English (United States)</item>
+        <item>English (United Kingdom)</item>
+        <item>French (France)</item>
+        <item>Spanish (Spain)</item>
+        <item>Italian (Italy)</item>
+        <item>Portuguese (Brazil)</item>
+        <item>Dutch (Netherlands)</item>
+        <item>Polish (Poland)</item>
+        <item>Russian (Russia)</item>
+        <item>Japanese (Japan)</item>
+        <item>Korean (South Korea)</item>
+        <item>Chinese (Simplified)</item>
+        <item>Chinese (Traditional)</item>
+    </string-array>
+    
+    <string-array name="transcription_language_codes">
+        <item>de-DE</item>
+        <item>en-US</item>
+        <item>en-GB</item>
+        <item>fr-FR</item>
+        <item>es-ES</item>
+        <item>it-IT</item>
+        <item>pt-BR</item>
+        <item>nl-NL</item>
+        <item>pl-PL</item>
+        <item>ru-RU</item>
+        <item>ja-JP</item>
+        <item>ko-KR</item>
+        <item>zh-CN</item>
+        <item>zh-TW</item>
+    </string-array>
+</resources>

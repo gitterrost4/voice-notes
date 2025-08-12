@@ -76,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
     
     // Audio recording constants
     private static final int AUDIO_SAMPLE_RATE = 8000;
-    private static final String AUDIO_LANGUAGE_CODE = "de-DE";
     private static final String AUDIO_ENCODING = "AMR";
     
     // Transcription constants
@@ -400,12 +399,16 @@ public class MainActivity extends AppCompatActivity {
                     credentials.refresh();
                     String accessToken = credentials.getAccessToken().getTokenValue();
                     
+                    // Get selected language
+                    SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+                    String languageCode = SettingsActivity.getSelectedLanguageCode(prefs);
+                    
                     // Create JSON request body
                     String requestJson = "{"
                             + "\"config\": {"
                             + "\"encoding\": \"" + AUDIO_ENCODING + "\","
                             + "\"sampleRateHertz\": " + AUDIO_SAMPLE_RATE + ","
-                            + "\"languageCode\": \"" + AUDIO_LANGUAGE_CODE + "\""
+                            + "\"languageCode\": \"" + languageCode + "\""
                             + "},"
                             + "\"audio\": {"
                             + "\"content\": \"" + audioBase64 + "\""
@@ -552,12 +555,16 @@ public class MainActivity extends AppCompatActivity {
             credentials.refresh();
             String accessToken = credentials.getAccessToken().getTokenValue();
             
+            // Get selected language
+            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+            String languageCode = SettingsActivity.getSelectedLanguageCode(prefs);
+            
             // Create JSON request body
             String requestJson = "{"
                     + "\"config\": {"
                     + "\"encoding\": \"" + AUDIO_ENCODING + "\","
                     + "\"sampleRateHertz\": " + AUDIO_SAMPLE_RATE + ","
-                    + "\"languageCode\": \"" + AUDIO_LANGUAGE_CODE + "\""
+                    + "\"languageCode\": \"" + languageCode + "\""
                     + "},"
                     + "\"audio\": {"
                     + "\"content\": \"" + audioBase64 + "\""

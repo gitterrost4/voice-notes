@@ -38,10 +38,14 @@
     <string name="transcription_complete">Transcription complete! %d notes processed.</string>
     <string name="no_notes_to_transcribe">No notes need transcription</string>
     <string name="transcription_settings">Transcription Settings</string>
+    <string name="transcription_language">Transcription Language</string>
     <string name="google_cloud_credentials">Google Cloud Credentials (JSON)</string>
     <string name="paste_credentials_json">Paste your Google Cloud service account JSON here...</string>
     <string name="test_credentials">Test Credentials</string>
     <string name="credentials_valid">Credentials are valid!</string>
     <string name="credentials_invalid">Invalid credentials. Please check the JSON format.</string>
     <string name="credentials_saved">Credentials saved successfully</string>
+    <string name="transcription_setup_info">Transcription Setup Help</string>
+    <string name="transcription_help_title">Google Cloud Speech-to-Text Setup</string>
+    <string name="transcription_help_content">To enable German speech transcription:\n\n1. Go to Google Cloud Console (console.cloud.google.com)\n\n2. Create a new project or select existing one\n\n3. Enable the \"Cloud Speech-to-Text API\"\n\n4. Go to \"IAM &amp; Admin\" → \"Service Accounts\"\n\n5. Click \"Create Service Account\"\n   • Name: voice-notes-service\n   • Role: Cloud Speech Client\n\n6. Click \"Add Key\" → \"Create new key\" → \"JSON\"\n\n7. Copy the downloaded JSON content and paste it above\n\n8. Test your credentials\n\nFree Tier: 60 minutes/month\nCost: $0.024 per minute after free tier\n\nYour recordings will be transcribed in German automatically!</string>
 </resources>

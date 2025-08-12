@@ -3,8 +3,11 @@ package de.gitterrost4.voicenotes;
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,6 +30,8 @@ public class SettingsActivity extends AppCompatActivity implements CategoriesAda
     private static final String PREFS_NAME = "voice_notes_prefs";
     private static final String CATEGORIES_KEY = "categories";
     private static final String CREDENTIALS_KEY = "google_cloud_credentials";
+    private static final String LANGUAGE_KEY = "transcription_language";
+    private static final int DEFAULT_LANGUAGE_INDEX = 0; // German
     private static final List<String> DEFAULT_CATEGORIES = Arrays.asList(
         "ToDos", "Reminders", "Town Meeting"
     );
@@ -37,6 +42,7 @@ public class SettingsActivity extends AppCompatActivity implements CategoriesAda
     private Gson gson;
     private ItemTouchHelper itemTouchHelper;
     private EditText credentialsEditText;
+    private Spinner languageSpinner;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +61,7 @@ public class SettingsActivity extends AppCompatActivity implements CategoriesAda
         loadCategories();
         setupViews();
         loadCredentials();
+        loadLanguageSelection();
     }
     
     private void loadCategories() {
@@ -73,13 +80,21 @@ public class SettingsActivity extends AppCompatActivity implements CategoriesAda
     }
     
     private void setupViews() {
-        // Credentials views
-        credentialsEditText = findViewById(R.id.credentialsEditText);
-        Button testCredentialsButton = findViewById(R.id.testCredentialsButton);
-        
         // Categories views
         Button addCategoryButton = findViewById(R.id.addCategoryButton);
         RecyclerView categoriesRecyclerView = findViewById(R.id.categoriesRecyclerView);
+        
+        // Credentials views
+        languageSpinner = findViewById(R.id.languageSpinner);
+        credentialsEditText = findViewById(R.id.credentialsEditText);
+        Button testCredentialsButton = findViewById(R.id.testCredentialsButton);
+        ImageButton transcriptionInfoButton = findViewById(R.id.transcriptionInfoButton);
+        
+        // Setup language spinner
+        ArrayAdapter<CharSequence> languageAdapter = ArrayAdapter.createFromResource(
+            this, R.array.transcription_languages, android.R.layout.simple_spinner_item);
+        languageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        languageSpinner.setAdapter(languageAdapter);
         
         adapter = new CategoriesAdapter(categories, this::deleteCategory, this);
         categoriesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -93,11 +108,25 @@ public class SettingsActivity extends AppCompatActivity implements CategoriesAda
         // Set up click listeners
         addCategoryButton.setOnClickListener(v -> showAddCategoryDialog());
         testCredentialsButton.setOnClickListener(v -> testCredentials());
+        transcriptionInfoButton.setOnClickListener(v -> showTranscriptionHelpDialog());
         
         // Auto-save credentials when text changes
         credentialsEditText.setOnFocusChangeListener((v, hasFocus) -> {
             if (!hasFocus) {
                 saveCredentials();
+            }
+        });
+        
+        // Save language selection when changed
+        languageSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {
+                saveLanguageSelection(position);
+            }
+            
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {
+                // Do nothing
             }
         });
     }
@@ -198,9 +227,40 @@ public class SettingsActivity extends AppCompatActivity implements CategoriesAda
         }
     }
     
+    private void showTranscriptionHelpDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.transcription_help_title);
+        builder.setMessage(R.string.transcription_help_content);
+        builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss());
+        builder.show();
+    }
+    
     @Override
     public void onStartDrag(RecyclerView.ViewHolder viewHolder) {
         itemTouchHelper.startDrag(viewHolder);
+    }
+    
+    private void loadLanguageSelection() {
+        int savedLanguageIndex = prefs.getInt(LANGUAGE_KEY, DEFAULT_LANGUAGE_INDEX);
+        languageSpinner.setSelection(savedLanguageIndex);
+    }
+    
+    private void saveLanguageSelection(int position) {
+        prefs.edit().putInt(LANGUAGE_KEY, position).apply();
+    }
+    
+    public static String getSelectedLanguageCode(SharedPreferences prefs) {
+        int languageIndex = prefs.getInt(LANGUAGE_KEY, DEFAULT_LANGUAGE_INDEX);
+        String[] languageCodes = {
+            "de-DE", "en-US", "en-GB", "fr-FR", "es-ES", "it-IT", 
+            "pt-BR", "nl-NL", "pl-PL", "ru-RU", "ja-JP", "ko-KR", 
+            "zh-CN", "zh-TW"
+        };
+        
+        if (languageIndex >= 0 && languageIndex < languageCodes.length) {
+            return languageCodes[languageIndex];
+        }
+        return "de-DE"; // Default fallback
     }
     
     @Override
