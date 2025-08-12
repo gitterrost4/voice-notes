@@ -87,7 +87,7 @@ public class SettingsActivity extends AppCompatActivity implements CategoriesAda
         // Credentials views
         languageSpinner = findViewById(R.id.languageSpinner);
         credentialsEditText = findViewById(R.id.credentialsEditText);
-        Button testCredentialsButton = findViewById(R.id.testCredentialsButton);
+        Button saveCredentialsButton = findViewById(R.id.saveCredentialsButton);
         ImageButton transcriptionInfoButton = findViewById(R.id.transcriptionInfoButton);
         
         // Setup language spinner
@@ -107,7 +107,7 @@ public class SettingsActivity extends AppCompatActivity implements CategoriesAda
         
         // Set up click listeners
         addCategoryButton.setOnClickListener(v -> showAddCategoryDialog());
-        testCredentialsButton.setOnClickListener(v -> testCredentials());
+        saveCredentialsButton.setOnClickListener(v -> saveCredentials());
         transcriptionInfoButton.setOnClickListener(v -> showTranscriptionHelpDialog());
         
         // Auto-save credentials when text changes
@@ -183,19 +183,16 @@ public class SettingsActivity extends AppCompatActivity implements CategoriesAda
     }
     
     private void saveCredentials() {
-        String credentials = credentialsEditText.getText().toString().trim();
-        prefs.edit().putString(CREDENTIALS_KEY, credentials).apply();
-        
-        if (!credentials.isEmpty()) {
-            Toast.makeText(this, R.string.credentials_saved, Toast.LENGTH_SHORT).show();
-        }
+        validateAndSaveCredentials();
     }
     
-    private void testCredentials() {
+    private void validateAndSaveCredentials() {
         String credentials = credentialsEditText.getText().toString().trim();
         
         if (credentials.isEmpty()) {
-            Toast.makeText(this, "Please enter credentials first", Toast.LENGTH_SHORT).show();
+            // Allow saving empty credentials (to delete them)
+            prefs.edit().putString(CREDENTIALS_KEY, "").apply();
+            Toast.makeText(this, "Credentials cleared", Toast.LENGTH_SHORT).show();
             return;
         }
         
@@ -219,7 +216,7 @@ public class SettingsActivity extends AppCompatActivity implements CategoriesAda
             }
             
             // Save valid credentials
-            saveCredentials();
+            prefs.edit().putString(CREDENTIALS_KEY, credentials).apply();
             Toast.makeText(this, R.string.credentials_valid, Toast.LENGTH_LONG).show();
             
         } catch (JsonSyntaxException e) {

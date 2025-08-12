@@ -107,10 +107,10 @@
                 android:layout_marginBottom="8dp" />
 
             <Button
-                android:id="@+id/testCredentialsButton"
+                android:id="@+id/saveCredentialsButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/test_credentials"
+                android:text="@string/save_credentials"
                 android:layout_marginBottom="24dp" />
 
         </LinearLayout>
