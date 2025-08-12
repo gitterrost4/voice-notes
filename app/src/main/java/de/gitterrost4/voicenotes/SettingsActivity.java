@@ -13,6 +13,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
@@ -24,6 +26,7 @@ public class SettingsActivity extends AppCompatActivity implements CategoriesAda
     
     private static final String PREFS_NAME = "voice_notes_prefs";
     private static final String CATEGORIES_KEY = "categories";
+    private static final String CREDENTIALS_KEY = "google_cloud_credentials";
     private static final List<String> DEFAULT_CATEGORIES = Arrays.asList(
         "ToDos", "Reminders", "Town Meeting"
     );
@@ -33,6 +36,7 @@ public class SettingsActivity extends AppCompatActivity implements CategoriesAda
     private SharedPreferences prefs;
     private Gson gson;
     private ItemTouchHelper itemTouchHelper;
+    private EditText credentialsEditText;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +54,7 @@ public class SettingsActivity extends AppCompatActivity implements CategoriesAda
         
         loadCategories();
         setupViews();
+        loadCredentials();
     }
     
     private void loadCategories() {
@@ -68,6 +73,11 @@ public class SettingsActivity extends AppCompatActivity implements CategoriesAda
     }
     
     private void setupViews() {
+        // Credentials views
+        credentialsEditText = findViewById(R.id.credentialsEditText);
+        Button testCredentialsButton = findViewById(R.id.testCredentialsButton);
+        
+        // Categories views
         Button addCategoryButton = findViewById(R.id.addCategoryButton);
         RecyclerView categoriesRecyclerView = findViewById(R.id.categoriesRecyclerView);
         
@@ -80,7 +90,16 @@ public class SettingsActivity extends AppCompatActivity implements CategoriesAda
         itemTouchHelper = new ItemTouchHelper(callback);
         itemTouchHelper.attachToRecyclerView(categoriesRecyclerView);
         
+        // Set up click listeners
         addCategoryButton.setOnClickListener(v -> showAddCategoryDialog());
+        testCredentialsButton.setOnClickListener(v -> testCredentials());
+        
+        // Auto-save credentials when text changes
+        credentialsEditText.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                saveCredentials();
+            }
+        });
     }
     
     private void showAddCategoryDialog() {
@@ -127,6 +146,56 @@ public class SettingsActivity extends AppCompatActivity implements CategoriesAda
         
         builder.setNegativeButton(R.string.cancel, (dialog, which) -> dialog.cancel());
         builder.show();
+    }
+    
+    private void loadCredentials() {
+        String credentials = prefs.getString(CREDENTIALS_KEY, "");
+        credentialsEditText.setText(credentials);
+    }
+    
+    private void saveCredentials() {
+        String credentials = credentialsEditText.getText().toString().trim();
+        prefs.edit().putString(CREDENTIALS_KEY, credentials).apply();
+        
+        if (!credentials.isEmpty()) {
+            Toast.makeText(this, R.string.credentials_saved, Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    private void testCredentials() {
+        String credentials = credentialsEditText.getText().toString().trim();
+        
+        if (credentials.isEmpty()) {
+            Toast.makeText(this, "Please enter credentials first", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        try {
+            // Validate JSON format
+            JsonObject credentialsJson = gson.fromJson(credentials, JsonObject.class);
+            
+            // Check for required fields
+            String[] requiredFields = {"type", "project_id", "private_key", "client_email"};
+            for (String field : requiredFields) {
+                if (!credentialsJson.has(field)) {
+                    Toast.makeText(this, "Missing required field: " + field, Toast.LENGTH_LONG).show();
+                    return;
+                }
+            }
+            
+            // Check if it's a service account
+            if (!"service_account".equals(credentialsJson.get("type").getAsString())) {
+                Toast.makeText(this, "Must be a service account credential", Toast.LENGTH_LONG).show();
+                return;
+            }
+            
+            // Save valid credentials
+            saveCredentials();
+            Toast.makeText(this, R.string.credentials_valid, Toast.LENGTH_LONG).show();
+            
+        } catch (JsonSyntaxException e) {
+            Toast.makeText(this, R.string.credentials_invalid, Toast.LENGTH_LONG).show();
+        }
     }
     
     @Override

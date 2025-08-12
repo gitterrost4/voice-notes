@@ -34,4 +34,11 @@
     <string name="transcribing_notes">Transcribing %d notes...</string>
     <string name="transcription_complete">Transcription complete! %d notes processed.</string>
     <string name="no_notes_to_transcribe">No notes need transcription</string>
+    <string name="transcription_settings">Transcription Settings</string>
+    <string name="google_cloud_credentials">Google Cloud Credentials (JSON)</string>
+    <string name="paste_credentials_json">Paste your Google Cloud service account JSON here...</string>
+    <string name="test_credentials">Test Credentials</string>
+    <string name="credentials_valid">Credentials are valid!</string>
+    <string name="credentials_invalid">Invalid credentials. Please check the JSON format.</string>
+    <string name="credentials_saved">Credentials saved successfully</string>
 </resources>

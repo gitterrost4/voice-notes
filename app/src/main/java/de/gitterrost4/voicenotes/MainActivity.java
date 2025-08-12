@@ -72,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String NOTES_FILE = "notes.json";
     private static final String PREFS_NAME = "voice_notes_prefs";
     private static final String CATEGORIES_KEY = "categories";
+    private static final String CREDENTIALS_KEY = "google_cloud_credentials";
     private static final List<String> DEFAULT_CATEGORIES = Arrays.asList(
         "ToDos", "Reminders", "Town Meeting"
     );
@@ -332,15 +333,29 @@ public class MainActivity extends AppCompatActivity {
                 == PackageManager.PERMISSION_GRANTED;
     }
     
+    private String getCredentialsJson() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        return prefs.getString(CREDENTIALS_KEY, "");
+    }
+    
     private void transcribeAudio(Note audioNote) {
         speechExecutor.execute(() -> {
             try {
+                // Check if credentials are available
+                String credentialsJson = getCredentialsJson();
+                if (credentialsJson.isEmpty()) {
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, "Please configure Google Cloud credentials in Settings", Toast.LENGTH_LONG).show();
+                    });
+                    return;
+                }
+                
                 // Read audio file
                 byte[] audioData = Files.readAllBytes(Paths.get(audioNote.getFilePath()));
                 String audioBase64 = Base64.encodeToString(audioData, Base64.NO_WRAP);
                 
                 // Get access token
-                try (InputStream credentialsStream = getAssets().open("credentials.json")) {
+                try (InputStream credentialsStream = new java.io.ByteArrayInputStream(credentialsJson.getBytes())) {
                     GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsStream)
                             .createScoped("https://www.googleapis.com/auth/cloud-platform");
                     credentials.refresh();
@@ -481,12 +496,18 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void transcribeNoteSync(Note audioNote) throws Exception {
+        // Check if credentials are available
+        String credentialsJson = getCredentialsJson();
+        if (credentialsJson.isEmpty()) {
+            throw new Exception("No credentials configured");
+        }
+        
         // Read audio file
         byte[] audioData = Files.readAllBytes(Paths.get(audioNote.getFilePath()));
         String audioBase64 = Base64.encodeToString(audioData, Base64.NO_WRAP);
         
         // Get access token
-        try (InputStream credentialsStream = getAssets().open("credentials.json")) {
+        try (InputStream credentialsStream = new java.io.ByteArrayInputStream(credentialsJson.getBytes())) {
             GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsStream)
                     .createScoped("https://www.googleapis.com/auth/cloud-platform");
             credentials.refresh();
