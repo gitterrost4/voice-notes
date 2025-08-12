@@ -178,6 +178,8 @@ public class MainActivity extends AppCompatActivity {
             public void onToggleDone(Note note) { toggleDoneStatus(note); }
             @Override
             public void onDelete(Note note) { deleteNote(note); }
+            @Override
+            public void onEditTextNote(Note note) { showEditTextNoteDialog(note); }
         };
         
         activeAdapter = new NoteAdapter(activeNotes, listener, this);
@@ -230,6 +232,33 @@ public class MainActivity extends AppCompatActivity {
                 saveNotes();
                 
                 Toast.makeText(this, R.string.text_note_saved, Toast.LENGTH_SHORT).show();
+            }
+        });
+        
+        builder.setNegativeButton(R.string.cancel, (dialog, which) -> dialog.cancel());
+        builder.show();
+    }
+    
+    private void showEditTextNoteDialog(Note note) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.edit_text_note);
+        
+        final EditText input = new EditText(this);
+        input.setHint(R.string.enter_note_text);
+        input.setText(note.getText()); // Pre-populate with existing text
+        input.setSelection(input.getText().length()); // Cursor at end
+        input.setMinLines(3);
+        input.setMaxLines(10);
+        builder.setView(input);
+        
+        builder.setPositiveButton(R.string.save, (dialog, which) -> {
+            String noteText = input.getText().toString().trim();
+            if (!noteText.isEmpty()) {
+                note.setContent(noteText);
+                refreshNoteLists();
+                saveNotes();
+                
+                Toast.makeText(this, R.string.text_note_updated, Toast.LENGTH_SHORT).show();
             }
         });
         

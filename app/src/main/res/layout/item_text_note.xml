@@ -46,10 +46,12 @@
         android:layout_height="48dp"
         android:src="@android:drawable/ic_menu_edit"
         android:layout_marginStart="8dp"
-        android:background="@null"
-        android:contentDescription="Text Note"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/edit_text_note"
         android:scaleType="centerInside"
         android:padding="8dp"
+        android:clickable="true"
+        android:focusable="true"
         android:tint="@color/play_button_default" />
 
     <ImageButton

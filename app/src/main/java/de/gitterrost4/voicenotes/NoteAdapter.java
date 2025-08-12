@@ -27,6 +27,7 @@ public class NoteAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         void onPlayAudio(Note note);
         void onToggleDone(Note note);
         void onDelete(Note note);
+        void onEditTextNote(Note note);
     }
     
     public NoteAdapter(List<Note> notes, OnNoteActionListener listener, MainActivity mainActivity) {
@@ -153,6 +154,7 @@ public class NoteAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         holder.deleteButton.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.delete_button)));
         
         // Set click listeners
+        holder.textIcon.setOnClickListener(v -> listener.onEditTextNote(note));
         holder.doneButton.setOnClickListener(v -> listener.onToggleDone(note));
         holder.deleteButton.setOnClickListener(v -> listener.onDelete(note));
     }

@@ -28,9 +28,11 @@
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="add_text_note">Add Text Note</string>
+    <string name="edit_text_note">Edit Text Note</string>
     <string name="enter_note_text">Enter your note</string>
     <string name="note_text">Note Text</string>
     <string name="text_note_saved">Text note saved successfully</string>
+    <string name="text_note_updated">Text note updated successfully</string>
     <string name="transcribe_existing">Transcribe Existing Notes</string>
     <string name="transcribing_notes">Transcribing %d notes...</string>
     <string name="transcription_complete">Transcription complete! %d notes processed.</string>

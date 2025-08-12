@@ -14,7 +14,7 @@ public final class Note {
     private final Type type;
     private final String category;
     private final LocalDateTime timestamp;
-    private final String content; // For text notes: the text content; For audio notes: the transcription
+    private String content; // For text notes: the text content; For audio notes: the transcription
     private final String filePath; // For audio notes: the audio file path
     private boolean done;
     
@@ -60,6 +60,10 @@ public final class Note {
     
     public void setDone(boolean done) {
         this.done = done;
+    }
+    
+    public void setContent(String content) {
+        this.content = content;
     }
     
     public String getFormattedTimestamp() {
