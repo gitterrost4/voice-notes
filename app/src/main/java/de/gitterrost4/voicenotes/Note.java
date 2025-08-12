@@ -14,15 +14,29 @@ public final class Note {
     private final Type type;
     private final String category;
     private final LocalDateTime timestamp;
-    private final String content; // For text notes: the text content; For audio notes: the file path
+    private final String content; // For text notes: the text content; For audio notes: the transcription
+    private final String filePath; // For audio notes: the audio file path
     private boolean done;
     
+    // Constructor for text notes
     public Note(String id, Type type, String category, LocalDateTime timestamp, String content) {
         this.id = id;
         this.type = type;
         this.category = category;
         this.timestamp = timestamp;
         this.content = content;
+        this.filePath = null;
+        this.done = false;
+    }
+    
+    // Constructor for audio notes with transcription
+    public Note(String id, Type type, String category, LocalDateTime timestamp, String content, String filePath) {
+        this.id = id;
+        this.type = type;
+        this.category = category;
+        this.timestamp = timestamp;
+        this.content = content; // transcription for audio notes
+        this.filePath = filePath;
         this.done = false;
     }
     
@@ -34,14 +48,14 @@ public final class Note {
     public String getContent() { return content; }
     public boolean isDone() { return done; }
     
-    // For audio notes, content is the file path
+    // For audio notes, returns the file path
     public String getFilePath() {
-        return type == Type.AUDIO ? content : null;
+        return filePath;
     }
     
-    // For text notes, content is the text
+    // For text notes and audio notes, returns the content (text or transcription)
     public String getText() {
-        return type == Type.TEXT ? content : null;
+        return content;
     }
     
     public void setDone(boolean done) {
@@ -54,13 +68,13 @@ public final class Note {
     }
     
     public String getDurationString() {
-        if (type != Type.AUDIO) {
+        if (type != Type.AUDIO || filePath == null) {
             return "";
         }
         
         try {
             MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-            retriever.setDataSource(content);
+            retriever.setDataSource(filePath);
             String durationStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
             retriever.release();
             
@@ -90,11 +104,12 @@ public final class Note {
                type == note.type &&
                Objects.equals(category, note.category) &&
                Objects.equals(timestamp, note.timestamp) &&
-               Objects.equals(content, note.content);
+               Objects.equals(content, note.content) &&
+               Objects.equals(filePath, note.filePath);
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(id, type, category, timestamp, content);
+        return Objects.hash(id, type, category, timestamp, content, filePath);
     }
 }

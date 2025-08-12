@@ -43,6 +43,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
@@ -50,6 +51,20 @@ import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import com.google.auth.oauth2.GoogleCredentials;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.MediaType;
+
+import java.io.InputStream;
+import android.util.Base64;
 
 public class MainActivity extends AppCompatActivity {
     
@@ -83,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
     private Optional<Note> currentlyPlaying = Optional.empty();
     private boolean isRecording = false;
     private boolean isCompletedSectionExpanded = false;
+    private ExecutorService speechExecutor = Executors.newSingleThreadExecutor();
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
         gson = new GsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeSerializer())
             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeDeserializer())
+            .registerTypeAdapter(Note.class, new NoteDeserializer())
             .create();
     }
     
@@ -287,6 +304,7 @@ public class MainActivity extends AppCompatActivity {
                     Note.Type.AUDIO,
                     category,
                     LocalDateTime.now(),
+                    "", // Empty transcription initially
                     currentRecordingPath.get()
                 );
                 
@@ -295,6 +313,9 @@ public class MainActivity extends AppCompatActivity {
                 
                 Toast.makeText(this, R.string.recording_saved, Toast.LENGTH_SHORT).show();
                 saveNotes(); // Save to persistent storage
+                
+                // Start transcription in background
+                transcribeAudio(audioNote);
                 
             } catch (RuntimeException e) {
                 Toast.makeText(this, "Stop recording failed", Toast.LENGTH_SHORT).show();
@@ -309,6 +330,230 @@ public class MainActivity extends AppCompatActivity {
     private boolean hasRecordingPermission() {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) 
                 == PackageManager.PERMISSION_GRANTED;
+    }
+    
+    private void transcribeAudio(Note audioNote) {
+        speechExecutor.execute(() -> {
+            try {
+                // Read audio file
+                byte[] audioData = Files.readAllBytes(Paths.get(audioNote.getFilePath()));
+                String audioBase64 = Base64.encodeToString(audioData, Base64.NO_WRAP);
+                
+                // Get access token
+                try (InputStream credentialsStream = getAssets().open("credentials.json")) {
+                    GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsStream)
+                            .createScoped("https://www.googleapis.com/auth/cloud-platform");
+                    credentials.refresh();
+                    String accessToken = credentials.getAccessToken().getTokenValue();
+                    
+                    // Create JSON request body
+                    String requestJson = "{"
+                            + "\"config\": {"
+                            + "\"encoding\": \"AMR\","
+                            + "\"sampleRateHertz\": 8000,"
+                            + "\"languageCode\": \"de-DE\""
+                            + "},"
+                            + "\"audio\": {"
+                            + "\"content\": \"" + audioBase64 + "\""
+                            + "}"
+                            + "}";
+                    
+                    // Make HTTP request to Speech-to-Text REST API
+                    OkHttpClient client = new OkHttpClient();
+                    RequestBody body = RequestBody.create(requestJson, MediaType.parse("application/json"));
+                    Request request = new Request.Builder()
+                            .url("https://speech.googleapis.com/v1/speech:recognize")
+                            .addHeader("Authorization", "Bearer " + accessToken)
+                            .addHeader("Content-Type", "application/json")
+                            .post(body)
+                            .build();
+                    
+                    try (Response response = client.newCall(request).execute()) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            String responseJson = response.body().string();
+                            String transcription = parseTranscriptionResponse(responseJson);
+                            
+                            // Update note with transcription on UI thread
+                            runOnUiThread(() -> {
+                                updateNoteTranscription(audioNote, transcription);
+                            });
+                        } else {
+                            runOnUiThread(() -> {
+                                Toast.makeText(this, "Transcription failed: HTTP " + response.code(), Toast.LENGTH_SHORT).show();
+                            });
+                        }
+                    }
+                }
+                
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Transcription failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
+    }
+    
+    private String parseTranscriptionResponse(String responseJson) {
+        try {
+            JsonObject response = gson.fromJson(responseJson, JsonObject.class);
+            StringBuilder transcript = new StringBuilder();
+            
+            if (response.has("results")) {
+                for (JsonElement result : response.getAsJsonArray("results")) {
+                    JsonObject resultObj = result.getAsJsonObject();
+                    if (resultObj.has("alternatives")) {
+                        for (JsonElement alternative : resultObj.getAsJsonArray("alternatives")) {
+                            JsonObject altObj = alternative.getAsJsonObject();
+                            if (altObj.has("transcript")) {
+                                transcript.append(altObj.get("transcript").getAsString());
+                            }
+                        }
+                    }
+                }
+            }
+            
+            String transcription = transcript.toString().trim();
+            return transcription.isEmpty() ? "[No speech detected]" : transcription;
+            
+        } catch (Exception e) {
+            return "[Transcription parsing failed]";
+        }
+    }
+    
+    private void transcribeExistingNotes() {
+        // Find all non-completed audio notes without transcription
+        List<Note> notesToTranscribe = notes.stream()
+            .filter(note -> note.getType() == Note.Type.AUDIO)
+            .filter(note -> !note.isDone())
+            .filter(note -> note.getText() == null || note.getText().trim().isEmpty())
+            .collect(Collectors.toList());
+        
+        if (notesToTranscribe.isEmpty()) {
+            Toast.makeText(this, R.string.no_notes_to_transcribe, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // Show progress message
+        String progressMessage = getString(R.string.transcribing_notes, notesToTranscribe.size());
+        Toast.makeText(this, progressMessage, Toast.LENGTH_LONG).show();
+        
+        // Start batch transcription
+        batchTranscribeNotes(notesToTranscribe);
+    }
+    
+    private void batchTranscribeNotes(List<Note> notesToTranscribe) {
+        speechExecutor.execute(() -> {
+            int processedCount = 0;
+            
+            for (Note note : notesToTranscribe) {
+                try {
+                    // Add delay between requests to avoid rate limiting
+                    if (processedCount > 0) {
+                        Thread.sleep(1000); // 1 second delay
+                    }
+                    
+                    transcribeNoteSync(note);
+                    processedCount++;
+                    
+                    // Update UI on main thread
+                    final int currentCount = processedCount;
+                    runOnUiThread(() -> {
+                        refreshNoteLists();
+                        saveNotes();
+                    });
+                    
+                } catch (Exception e) {
+                    // Continue with next note if one fails
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, "Failed to transcribe note: " + note.getCategory(), 
+                                     Toast.LENGTH_SHORT).show();
+                    });
+                }
+            }
+            
+            // Show completion message
+            final int finalCount = processedCount;
+            runOnUiThread(() -> {
+                String completeMessage = getString(R.string.transcription_complete, finalCount);
+                Toast.makeText(this, completeMessage, Toast.LENGTH_LONG).show();
+            });
+        });
+    }
+    
+    private void transcribeNoteSync(Note audioNote) throws Exception {
+        // Read audio file
+        byte[] audioData = Files.readAllBytes(Paths.get(audioNote.getFilePath()));
+        String audioBase64 = Base64.encodeToString(audioData, Base64.NO_WRAP);
+        
+        // Get access token
+        try (InputStream credentialsStream = getAssets().open("credentials.json")) {
+            GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsStream)
+                    .createScoped("https://www.googleapis.com/auth/cloud-platform");
+            credentials.refresh();
+            String accessToken = credentials.getAccessToken().getTokenValue();
+            
+            // Create JSON request body
+            String requestJson = "{"
+                    + "\"config\": {"
+                    + "\"encoding\": \"AMR\","
+                    + "\"sampleRateHertz\": 8000,"
+                    + "\"languageCode\": \"de-DE\""
+                    + "},"
+                    + "\"audio\": {"
+                    + "\"content\": \"" + audioBase64 + "\""
+                    + "}"
+                    + "}";
+            
+            // Make HTTP request to Speech-to-Text REST API
+            OkHttpClient client = new OkHttpClient();
+            RequestBody body = RequestBody.create(requestJson, MediaType.parse("application/json"));
+            Request request = new Request.Builder()
+                    .url("https://speech.googleapis.com/v1/speech:recognize")
+                    .addHeader("Authorization", "Bearer " + accessToken)
+                    .addHeader("Content-Type", "application/json")
+                    .post(body)
+                    .build();
+            
+            try (Response response = client.newCall(request).execute()) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String responseJson = response.body().string();
+                    String transcription = parseTranscriptionResponse(responseJson);
+                    
+                    // Update note with transcription synchronously
+                    runOnUiThread(() -> {
+                        updateNoteTranscription(audioNote, transcription);
+                    });
+                } else {
+                    throw new Exception("HTTP " + response.code());
+                }
+            }
+        }
+    }
+    
+    private void updateNoteTranscription(Note audioNote, String transcription) {
+        // Find the note in our list and update it
+        for (int i = 0; i < notes.size(); i++) {
+            Note note = notes.get(i);
+            if (note.getId().equals(audioNote.getId())) {
+                // Create new note with transcription
+                Note updatedNote = new Note(
+                    note.getId(),
+                    note.getType(),
+                    note.getCategory(),
+                    note.getTimestamp(),
+                    transcription,
+                    note.getFilePath()
+                );
+                updatedNote.setDone(note.isDone());
+                
+                notes.set(i, updatedNote);
+                refreshNoteLists();
+                saveNotes();
+                
+                Toast.makeText(this, "Transcription completed", Toast.LENGTH_SHORT).show();
+                break;
+            }
+        }
     }
     
     private void playNote(Note note) {
@@ -438,6 +683,9 @@ public class MainActivity extends AppCompatActivity {
             mediaRecorder.release();
             mediaRecorder = null;
         }
+        if (speechExecutor != null) {
+            speechExecutor.shutdown();
+        }
     }
     
     @Override
@@ -451,6 +699,9 @@ public class MainActivity extends AppCompatActivity {
         if (item.getItemId() == R.id.action_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
+            return true;
+        } else if (item.getItemId() == R.id.action_transcribe_existing) {
+            transcribeExistingNotes();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -595,6 +846,44 @@ public class MainActivity extends AppCompatActivity {
         public LocalDateTime deserialize(JsonElement json, Type type, JsonDeserializationContext context)
                 throws JsonParseException {
             return LocalDateTime.parse(json.getAsString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        }
+    }
+    
+    // Custom deserializer for Note to handle backward compatibility
+    private static class NoteDeserializer implements JsonDeserializer<Note> {
+        @Override
+        public Note deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                throws JsonParseException {
+            JsonObject jsonObject = json.getAsJsonObject();
+            
+            String id = jsonObject.get("id").getAsString();
+            Note.Type noteType = Note.Type.valueOf(jsonObject.get("type").getAsString());
+            String category = jsonObject.get("category").getAsString();
+            LocalDateTime timestamp = context.deserialize(jsonObject.get("timestamp"), LocalDateTime.class);
+            String content = jsonObject.get("content").getAsString();
+            boolean done = jsonObject.has("done") ? jsonObject.get("done").getAsBoolean() : false;
+            
+            Note note;
+            if (noteType == Note.Type.TEXT) {
+                note = new Note(id, noteType, category, timestamp, content);
+            } else {
+                // For audio notes, check if filePath exists (new format) or use content as filePath (old format)
+                String filePath;
+                String transcription;
+                if (jsonObject.has("filePath")) {
+                    // New format: content is transcription, filePath is separate
+                    filePath = jsonObject.get("filePath").getAsString();
+                    transcription = content;
+                } else {
+                    // Old format: content was the file path
+                    filePath = content;
+                    transcription = "";
+                }
+                note = new Note(id, noteType, category, timestamp, transcription, filePath);
+            }
+            
+            note.setDone(done);
+            return note;
         }
     }
 }

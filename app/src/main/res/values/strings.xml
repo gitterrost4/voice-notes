@@ -30,4 +30,8 @@
     <string name="enter_note_text">Enter your note</string>
     <string name="note_text">Note Text</string>
     <string name="text_note_saved">Text note saved successfully</string>
+    <string name="transcribe_existing">Transcribe Existing Notes</string>
+    <string name="transcribing_notes">Transcribing %d notes...</string>
+    <string name="transcription_complete">Transcription complete! %d notes processed.</string>
+    <string name="no_notes_to_transcribe">No notes need transcription</string>
 </resources>

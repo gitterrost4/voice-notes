@@ -70,13 +70,25 @@ public class NoteAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         holder.title.setText(titleWithDuration);
         holder.timestamp.setText(note.getFormattedTimestamp());
         
+        // Display transcription
+        String transcriptionText = note.getText();
+        if (transcriptionText != null && !transcriptionText.trim().isEmpty()) {
+            holder.transcription.setText(transcriptionText);
+            holder.transcription.setVisibility(View.VISIBLE);
+        } else {
+            holder.transcription.setText("Transcribing...");
+            holder.transcription.setVisibility(View.VISIBLE);
+        }
+        
         // Set text colors based on completion status
         if (note.isDone()) {
             holder.title.setTextColor(Color.parseColor("#888888"));
             holder.timestamp.setTextColor(Color.parseColor("#666666"));
+            holder.transcription.setTextColor(Color.parseColor("#666666"));
         } else {
             holder.title.setTextColor(Color.parseColor("#FFFFFF"));
             holder.timestamp.setTextColor(Color.parseColor("#CCCCCC"));
+            holder.transcription.setTextColor(Color.parseColor("#CCCCCC"));
         }
         
         // Update play button based on playing/paused state
@@ -151,7 +163,7 @@ public class NoteAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
     
     static class AudioViewHolder extends RecyclerView.ViewHolder {
-        TextView title, timestamp;
+        TextView title, timestamp, transcription;
         ImageView playButton;
         ImageButton doneButton, deleteButton;
         
@@ -159,6 +171,7 @@ public class NoteAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             super(itemView);
             title = itemView.findViewById(R.id.recordingTitle);
             timestamp = itemView.findViewById(R.id.recordingTimestamp);
+            transcription = itemView.findViewById(R.id.transcriptionText);
             playButton = itemView.findViewById(R.id.playButton);
             doneButton = itemView.findViewById(R.id.doneButton);
             deleteButton = itemView.findViewById(R.id.deleteButton);
