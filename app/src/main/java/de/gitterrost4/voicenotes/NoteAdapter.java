@@ -1,6 +1,7 @@
 package de.gitterrost4.voicenotes;
 
 import android.content.res.ColorStateList;
+import android.content.SharedPreferences;
 import androidx.core.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -77,8 +78,15 @@ public class NoteAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             holder.transcription.setText(transcriptionText);
             holder.transcription.setVisibility(View.VISIBLE);
         } else {
-            holder.transcription.setText("Transcribing...");
-            holder.transcription.setVisibility(View.VISIBLE);
+            // Check if credentials are configured before showing "Transcribing..."
+            SharedPreferences prefs = holder.itemView.getContext().getSharedPreferences("voice_notes_prefs", 0);
+            String credentials = prefs.getString("google_cloud_credentials", "");
+            if (!credentials.isEmpty()) {
+                holder.transcription.setText("Transcribing...");
+                holder.transcription.setVisibility(View.VISIBLE);
+            } else {
+                holder.transcription.setVisibility(View.GONE);
+            }
         }
         
         // Set text colors based on completion status

@@ -382,10 +382,7 @@ public class MainActivity extends AppCompatActivity {
                 // Check if credentials are available
                 String credentialsJson = getCredentialsJson();
                 if (credentialsJson.isEmpty()) {
-                    runOnUiThread(() -> {
-                        Toast.makeText(this, "Please configure Google Cloud credentials in Settings", Toast.LENGTH_LONG).show();
-                    });
-                    return;
+                    return; // Silently skip transcription if no credentials
                 }
                 
                 // Read audio file
@@ -478,6 +475,13 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void transcribeExistingNotes() {
+        // Check if credentials are available first
+        String credentialsJson = getCredentialsJson();
+        if (credentialsJson.isEmpty()) {
+            Toast.makeText(this, "Please configure Google Cloud credentials in Settings", Toast.LENGTH_LONG).show();
+            return;
+        }
+        
         // Find all non-completed audio notes without transcription
         List<Note> notesToTranscribe = notes.stream()
             .filter(note -> note.getType() == Note.Type.AUDIO)
@@ -490,7 +494,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         
-        // Show progress message
+        // Show progress message only if credentials are configured
         String progressMessage = getString(R.string.transcribing_notes, notesToTranscribe.size());
         Toast.makeText(this, progressMessage, Toast.LENGTH_LONG).show();
         
@@ -617,7 +621,7 @@ public class MainActivity extends AppCompatActivity {
                 refreshNoteLists();
                 saveNotes();
                 
-                Toast.makeText(this, "Transcription completed", Toast.LENGTH_SHORT).show();
+                // Transcription completed silently
                 break;
             }
         }
