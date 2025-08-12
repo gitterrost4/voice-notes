@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="12dp"
-    android:background="#1E1E1E">
+    android:background="@color/background_secondary">
 
     <LinearLayout
         android:layout_width="0dp"
@@ -18,14 +18,14 @@
             android:layout_height="wrap_content"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="@android:color/black" />
+            android:textColor="@color/text_primary" />
 
         <TextView
             android:id="@+id/noteText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="14sp"
-            android:textColor="#CCCCCC"
+            android:textColor="@color/text_secondary"
             android:layout_marginTop="4dp"
             android:maxLines="3"
             android:ellipsize="end" />
@@ -50,7 +50,7 @@
         android:contentDescription="Text Note"
         android:scaleType="centerInside"
         android:padding="8dp"
-        android:tint="#4CAF50" />
+        android:tint="@color/play_button_default" />
 
     <ImageButton
         android:id="@+id/doneButton"
@@ -70,7 +70,7 @@
         android:src="@android:drawable/ic_menu_delete"
         android:layout_marginStart="4dp"
         android:background="?android:attr/selectableItemBackgroundBorderless"
-        android:contentDescription="@string/delete_audio"
+        android:contentDescription="@string/delete_text_note"
         android:scaleType="centerInside"
         android:padding="8dp" />
 

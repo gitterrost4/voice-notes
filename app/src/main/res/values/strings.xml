@@ -6,6 +6,7 @@
     <string name="play_audio">Play</string>
     <string name="stop_audio">Stop</string>
     <string name="delete_audio">Delete</string>
+    <string name="delete_text_note">Delete Text Note</string>
     <string name="mark_done">Done</string>
     <string name="mark_undone">Undo</string>
     <string name="category_todos">ToDos</string>

@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="#121212">
+    android:background="@color/background_primary">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -22,7 +22,7 @@
                 android:text="@string/transcription_settings"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/text_primary"
                 android:layout_marginBottom="16dp" />
 
             <TextView
@@ -30,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/google_cloud_credentials"
                 android:textSize="16sp"
-                android:textColor="#CCCCCC"
+                android:textColor="@color/text_secondary"
                 android:layout_marginBottom="8dp" />
 
             <EditText
@@ -39,9 +39,9 @@
                 android:layout_height="120dp"
                 android:gravity="top|start"
                 android:hint="@string/paste_credentials_json"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#888888"
-                android:background="#1E1E1E"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_disabled"
+                android:background="@color/background_secondary"
                 android:padding="12dp"
                 android:textSize="12sp"
                 android:fontFamily="monospace"
@@ -62,7 +62,7 @@
                 android:text="@string/category_settings"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/text_primary"
                 android:layout_marginBottom="16dp" />
 
             <Button

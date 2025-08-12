@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Theme Colors -->
+    <color name="background_primary">#121212</color>
+    <color name="background_secondary">#1E1E1E</color>
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#CCCCCC</color>
+    <color name="text_disabled">#888888</color>
+    <color name="text_hint">#666666</color>
+    
+    <!-- Status Colors -->
+    <color name="play_button_active">#FF9800</color>
+    <color name="play_button_default">#4CAF50</color>
+    <color name="done_button_active">#4CAF50</color>
+    <color name="delete_button">#F44336</color>
+    
+    <!-- Completion States -->
+    <color name="note_completed_text">#888888</color>
+    <color name="note_completed_secondary">#666666</color>
+    <color name="note_active_text">#FFFFFF</color>
+    <color name="note_active_secondary">#CCCCCC</color>
+</resources>

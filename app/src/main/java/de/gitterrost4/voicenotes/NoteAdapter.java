@@ -1,7 +1,7 @@
 package de.gitterrost4.voicenotes;
 
 import android.content.res.ColorStateList;
-import android.graphics.Color;
+import androidx.core.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -82,13 +82,13 @@ public class NoteAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         
         // Set text colors based on completion status
         if (note.isDone()) {
-            holder.title.setTextColor(Color.parseColor("#888888"));
-            holder.timestamp.setTextColor(Color.parseColor("#666666"));
-            holder.transcription.setTextColor(Color.parseColor("#666666"));
+            holder.title.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.note_completed_text));
+            holder.timestamp.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.note_completed_secondary));
+            holder.transcription.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.note_completed_secondary));
         } else {
-            holder.title.setTextColor(Color.parseColor("#FFFFFF"));
-            holder.timestamp.setTextColor(Color.parseColor("#CCCCCC"));
-            holder.transcription.setTextColor(Color.parseColor("#CCCCCC"));
+            holder.title.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.note_active_text));
+            holder.timestamp.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.note_active_secondary));
+            holder.transcription.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.note_active_secondary));
         }
         
         // Update play button based on playing/paused state
@@ -97,26 +97,26 @@ public class NoteAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         
         if (isPlaying && !isPaused) {
             holder.playButton.setImageResource(android.R.drawable.ic_media_pause);
-            holder.playButton.setImageTintList(ColorStateList.valueOf(Color.parseColor("#FF9800")));
+            holder.playButton.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.play_button_active)));
         } else if (isPaused) {
             holder.playButton.setImageResource(android.R.drawable.ic_media_play);
-            holder.playButton.setImageTintList(ColorStateList.valueOf(Color.parseColor("#FF9800")));
+            holder.playButton.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.play_button_active)));
         } else {
             holder.playButton.setImageResource(android.R.drawable.ic_media_play);
-            holder.playButton.setImageTintList(ColorStateList.valueOf(Color.parseColor("#4CAF50")));
+            holder.playButton.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.play_button_default)));
         }
         
         // Update done button
         if (note.isDone()) {
             holder.doneButton.setImageResource(android.R.drawable.ic_menu_view);
-            holder.doneButton.setImageTintList(ColorStateList.valueOf(Color.parseColor("#4CAF50")));
+            holder.doneButton.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.done_button_active)));
         } else {
             holder.doneButton.setImageResource(android.R.drawable.ic_menu_view);
-            holder.doneButton.setImageTintList(ColorStateList.valueOf(Color.parseColor("#888888")));
+            holder.doneButton.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.text_disabled)));
         }
         
         // Set delete button color
-        holder.deleteButton.setImageTintList(ColorStateList.valueOf(Color.parseColor("#F44336")));
+        holder.deleteButton.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.delete_button)));
         
         // Set click listeners
         holder.playButton.setOnClickListener(v -> listener.onPlayAudio(note));
@@ -131,26 +131,26 @@ public class NoteAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         
         // Set text colors based on completion status
         if (note.isDone()) {
-            holder.title.setTextColor(Color.parseColor("#888888"));
-            holder.text.setTextColor(Color.parseColor("#666666"));
-            holder.timestamp.setTextColor(Color.parseColor("#666666"));
+            holder.title.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.note_completed_text));
+            holder.text.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.note_completed_secondary));
+            holder.timestamp.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.note_completed_secondary));
         } else {
-            holder.title.setTextColor(Color.parseColor("#FFFFFF"));
-            holder.text.setTextColor(Color.parseColor("#CCCCCC"));
-            holder.timestamp.setTextColor(Color.parseColor("#CCCCCC"));
+            holder.title.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.note_active_text));
+            holder.text.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.note_active_secondary));
+            holder.timestamp.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.note_active_secondary));
         }
         
         // Update done button
         if (note.isDone()) {
             holder.doneButton.setImageResource(android.R.drawable.ic_menu_view);
-            holder.doneButton.setImageTintList(ColorStateList.valueOf(Color.parseColor("#4CAF50")));
+            holder.doneButton.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.done_button_active)));
         } else {
             holder.doneButton.setImageResource(android.R.drawable.ic_menu_view);
-            holder.doneButton.setImageTintList(ColorStateList.valueOf(Color.parseColor("#888888")));
+            holder.doneButton.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.text_disabled)));
         }
         
         // Set delete button color
-        holder.deleteButton.setImageTintList(ColorStateList.valueOf(Color.parseColor("#F44336")));
+        holder.deleteButton.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(holder.itemView.getContext(), R.color.delete_button)));
         
         // Set click listeners
         holder.doneButton.setOnClickListener(v -> listener.onToggleDone(note));

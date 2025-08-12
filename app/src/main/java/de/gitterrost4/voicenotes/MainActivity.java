@@ -73,6 +73,16 @@ public class MainActivity extends AppCompatActivity {
     private static final String PREFS_NAME = "voice_notes_prefs";
     private static final String CATEGORIES_KEY = "categories";
     private static final String CREDENTIALS_KEY = "google_cloud_credentials";
+    
+    // Audio recording constants
+    private static final int AUDIO_SAMPLE_RATE = 8000;
+    private static final String AUDIO_LANGUAGE_CODE = "de-DE";
+    private static final String AUDIO_ENCODING = "AMR";
+    
+    // Transcription constants
+    private static final long BATCH_TRANSCRIPTION_DELAY_MS = 1000;
+    private static final String GOOGLE_CLOUD_SCOPE = "https://www.googleapis.com/auth/cloud-platform";
+    private static final String SPEECH_API_URL = "https://speech.googleapis.com/v1/speech:recognize";
     private static final List<String> DEFAULT_CATEGORIES = Arrays.asList(
         "ToDos", "Reminders", "Town Meeting"
     );
@@ -357,16 +367,16 @@ public class MainActivity extends AppCompatActivity {
                 // Get access token
                 try (InputStream credentialsStream = new java.io.ByteArrayInputStream(credentialsJson.getBytes())) {
                     GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsStream)
-                            .createScoped("https://www.googleapis.com/auth/cloud-platform");
+                            .createScoped(GOOGLE_CLOUD_SCOPE);
                     credentials.refresh();
                     String accessToken = credentials.getAccessToken().getTokenValue();
                     
                     // Create JSON request body
                     String requestJson = "{"
                             + "\"config\": {"
-                            + "\"encoding\": \"AMR\","
-                            + "\"sampleRateHertz\": 8000,"
-                            + "\"languageCode\": \"de-DE\""
+                            + "\"encoding\": \"" + AUDIO_ENCODING + "\","
+                            + "\"sampleRateHertz\": " + AUDIO_SAMPLE_RATE + ","
+                            + "\"languageCode\": \"" + AUDIO_LANGUAGE_CODE + "\""
                             + "},"
                             + "\"audio\": {"
                             + "\"content\": \"" + audioBase64 + "\""
@@ -377,7 +387,7 @@ public class MainActivity extends AppCompatActivity {
                     OkHttpClient client = new OkHttpClient();
                     RequestBody body = RequestBody.create(requestJson, MediaType.parse("application/json"));
                     Request request = new Request.Builder()
-                            .url("https://speech.googleapis.com/v1/speech:recognize")
+                            .url(SPEECH_API_URL)
                             .addHeader("Authorization", "Bearer " + accessToken)
                             .addHeader("Content-Type", "application/json")
                             .post(body)
@@ -464,7 +474,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     // Add delay between requests to avoid rate limiting
                     if (processedCount > 0) {
-                        Thread.sleep(1000); // 1 second delay
+                        Thread.sleep(BATCH_TRANSCRIPTION_DELAY_MS);
                     }
                     
                     transcribeNoteSync(note);
@@ -509,16 +519,16 @@ public class MainActivity extends AppCompatActivity {
         // Get access token
         try (InputStream credentialsStream = new java.io.ByteArrayInputStream(credentialsJson.getBytes())) {
             GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsStream)
-                    .createScoped("https://www.googleapis.com/auth/cloud-platform");
+                    .createScoped(GOOGLE_CLOUD_SCOPE);
             credentials.refresh();
             String accessToken = credentials.getAccessToken().getTokenValue();
             
             // Create JSON request body
             String requestJson = "{"
                     + "\"config\": {"
-                    + "\"encoding\": \"AMR\","
-                    + "\"sampleRateHertz\": 8000,"
-                    + "\"languageCode\": \"de-DE\""
+                    + "\"encoding\": \"" + AUDIO_ENCODING + "\","
+                    + "\"sampleRateHertz\": " + AUDIO_SAMPLE_RATE + ","
+                    + "\"languageCode\": \"" + AUDIO_LANGUAGE_CODE + "\""
                     + "},"
                     + "\"audio\": {"
                     + "\"content\": \"" + audioBase64 + "\""
@@ -529,7 +539,7 @@ public class MainActivity extends AppCompatActivity {
             OkHttpClient client = new OkHttpClient();
             RequestBody body = RequestBody.create(requestJson, MediaType.parse("application/json"));
             Request request = new Request.Builder()
-                    .url("https://speech.googleapis.com/v1/speech:recognize")
+                    .url(SPEECH_API_URL)
                     .addHeader("Authorization", "Bearer " + accessToken)
                     .addHeader("Content-Type", "application/json")
                     .post(body)
