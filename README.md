@@ -128,6 +128,12 @@ The app works perfectly without transcription, but if you want text previews of 
 - ✅ **Optional cloud** - transcription only if you choose
 - ✅ **Transparent** - open source code available for review
 
+## 📥 Download
+
+[![Download APK](https://img.shields.io/badge/Download-APK-green?style=for-the-badge)](https://github.com/gitterrost4/voice-notes/releases/latest/download/voice-notes-1.0.0.apk)
+    
+**Latest Version**: v1.0.0 | [View All Releases](https://github.com/gitterrost4/voice-notes/releases)
+
 ## 📄 Legal
 
 - **Privacy Policy**: [View Privacy Policy](privacy_policy.md)
