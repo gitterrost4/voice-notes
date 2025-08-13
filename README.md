@@ -30,3 +30,10 @@ Categories can be fully customized through the Settings menu.
 - Gradle 8.4
 - Gson for JSON serialization
 - AndroidX libraries
+
+## Legal
+
+- **Privacy Policy**: [View Privacy Policy](privacy_policy.md)
+- **Contact**: gitterrost4.apps@gmail.com
+
+
